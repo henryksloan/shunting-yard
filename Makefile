@@ -7,7 +7,7 @@ SRCTEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCTEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCTEXT)=.o))
 CFLAGS :=
-LIB :=
+LIB := -I lib
 INC := -I include
 
 $(TARGET): $(OBJECTS)
@@ -22,4 +22,8 @@ clean:
 	@echo "Cleaning..."
 	@echo "$(RM) -r $(BUILDDIR) $(TARGET)"; $(RM) -r $(BUILDDIR) $(TARGET)
 
-.PHONY: clean
+test: build/expression_parser.o build/reverse_polish.o test/test.cpp 
+	@echo "Building tests..."
+	@echo "$(CC) $(CFLAGS) $^ $(INC) $(LIB) -o bin/test"; $(CC) $(CFLAGS) $^ $(INC) $(LIB) -o bin/test
+
+.PHONY: clean test

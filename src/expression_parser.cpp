@@ -7,8 +7,14 @@ const std::map<char, std::pair<int, bool>> ExpressionParser::ops = {
 };
 
 bool ExpressionParser::is_number(const std::string str) {
-    return !str.empty() &&
-        std::find_if(str.begin(), str.end(), [](char c) { return !(std::isdigit(c) || c == '.');  }) == str.end();
+    try {
+        std::stod(str);
+    }
+    catch (std::invalid_argument) {
+        return false;
+    }
+
+    return true;
 }
 
 std::vector<std::string> ExpressionParser::tokenize(std::string str) {
@@ -47,13 +53,24 @@ std::vector<std::string> ExpressionParser::parse_string(std::string str) {
     std::vector<std::string> tokens = tokenize(str);
     std::vector<std::string> out_queue;
     std::vector<char> op_stack;
-    for (auto token : tokens) {
-        if (is_number(token)) {
-            out_queue.push_back(token);
+    bool op_or_left_paren = false;
+    bool negate = false;
+    for (int i = 0; i < tokens.size(); i++) {
+        std::string token = tokens[i];
+        if (token == "-" && (i == 0 || op_or_left_paren)) {
+            negate = true;
             continue;
         }
+        op_or_left_paren = false;
+
+        if (is_number(token)) {
+            out_queue.push_back((negate) ? ("-" + token) : token);
+            continue;
+        }
+        negate = false;
 
         if (ExpressionParser::ops.find(token[0]) != ExpressionParser::ops.end()) {
+            op_or_left_paren = true;
             if (op_stack.size() == 0) {
                 op_stack.push_back(token[0]);
                 continue;
@@ -72,6 +89,7 @@ std::vector<std::string> ExpressionParser::parse_string(std::string str) {
         }
 
         if (token[0] == '(') {
+            op_or_left_paren = true;
             op_stack.push_back(token[0]);
         }
         else if (token[0] == ')') {
@@ -85,7 +103,7 @@ std::vector<std::string> ExpressionParser::parse_string(std::string str) {
         }
     }
 
-    for (auto c : op_stack) {
+    for (int i = 0; i < op_stack.size(); i++) {
         out_queue.push_back(std::string(1, op_stack.back()));
         op_stack.pop_back();
     }
