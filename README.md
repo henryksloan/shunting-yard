@@ -12,8 +12,14 @@ Running the makefile will generate an executable in the `bin/` directory.
 make
 ```
 
+## Testing
+A number of tests are implemented according to the specifications of [Mozilla's calculator test suite](https://mozilla.github.io/calculator/test/). To compile these tests, run the `test` target of the makefile:
+```
+make test
+```
+This will generate a `test` executable in the `bin/` directory.
+
 ## To do
-* Ensure compliance with, and create tests according to the specifications of [Mozilla's calculator test suite](https://mozilla.github.io/calculator/test/).
 * Implement the parsing of function notation, i.e. `sin(3.14)`
 * Implement common functions, such as trigonometric functions and logarithms
 * Allow the usage of common mathematical constants such as pi and e
