@@ -9,14 +9,12 @@ int main(int argc, char **argv) {
     std::cout << "Enter an expression: ";
     std::getline(std::cin, str);
 
-    std::vector<std::string> out = ExpressionParser::parse_string(str);
-    std::cout << "Parsed to: ";
-    for (auto token : out) {
-        std::cout << token << ' ';
+    try {
+        std::cout << ReversePolish::evaluate(str) << '\n';
     }
-    std::cout << '\n';
-
-    std::cout << ReversePolish::evaluate(str) << '\n';
+    catch (const std::invalid_argument &e){
+        std::cout << '\'' << str << "\' is not a valid mathematical expression";
+    }
 
     return 0;
 }

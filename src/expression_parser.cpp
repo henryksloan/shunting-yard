@@ -1,6 +1,7 @@
 #include "expression_parser.h"
 
 const std::map<char, std::pair<int, bool>> ExpressionParser::ops = {
+    {'~', std::pair<int, bool>(5, true)},
     {'^', std::pair<int, bool>(4, true)},
     {'*', std::pair<int, bool>(3, false)}, {'/', std::pair<int, bool>(3, false)},
     {'+', std::pair<int, bool>(2, false)}, {'-', std::pair<int, bool>(2, false)}
@@ -53,34 +54,28 @@ std::vector<std::string> ExpressionParser::parse_string(std::string str) {
     std::vector<std::string> tokens = tokenize(str);
     std::vector<std::string> out_queue;
     std::vector<char> op_stack;
-    bool op_or_left_paren = false;
-    bool negate = false;
     for (int i = 0; i < tokens.size(); i++) {
         std::string token = tokens[i];
-        if (token == "-" && (i == 0 || op_or_left_paren)) {
-            negate = true;
-            continue;
-        }
-        op_or_left_paren = false;
-
         if (is_number(token)) {
-            out_queue.push_back((negate) ? ("-" + token) : token);
+            out_queue.push_back(token);
             continue;
         }
-        negate = false;
+
+        if (token == "-" &&
+            (i == 0 || (ExpressionParser::ops.find(tokens[i-1][0]) != ExpressionParser::ops.end()))) {
+            token = "~";
+        }
 
         if (ExpressionParser::ops.find(token[0]) != ExpressionParser::ops.end()) {
-            op_or_left_paren = true;
-            if (op_stack.size() == 0) {
+            if (op_stack.size() == 0 || token == "~") {
                 op_stack.push_back(token[0]);
                 continue;
             }
             std::pair<int, bool> op = ExpressionParser::ops.at(token[0]);
             char top = op_stack.back();
-            while ((top != '(') &&
+            while ((top != '\0') && (top != '(') &&
                    ((ExpressionParser::ops.at(top).first > op.first)
                 || (ExpressionParser::ops.at(top).second && (ExpressionParser::ops.at(top).first == op.first)))) {
-                if (top == '(') break;
                 out_queue.push_back(std::string(1, op_stack.back()));
                 op_stack.pop_back();
                 top = op_stack.back();
@@ -89,7 +84,6 @@ std::vector<std::string> ExpressionParser::parse_string(std::string str) {
         }
 
         if (token[0] == '(') {
-            op_or_left_paren = true;
             op_stack.push_back(token[0]);
         }
         else if (token[0] == ')') {
@@ -103,7 +97,7 @@ std::vector<std::string> ExpressionParser::parse_string(std::string str) {
         }
     }
 
-    for (int i = 0; i < op_stack.size(); i++) {
+    while (!op_stack.empty()) {
         out_queue.push_back(std::string(1, op_stack.back()));
         op_stack.pop_back();
     }
