@@ -1,5 +1,6 @@
 #include "expression_parser.h"
 
+// Map each operator to a pair (presedence, right associativity)
 const std::map<char, std::pair<int, bool>> ExpressionParser::ops = {
     {'~', std::pair<int, bool>(5, true)},
     {'^', std::pair<int, bool>(4, true)},
@@ -22,13 +23,12 @@ std::vector<std::string> ExpressionParser::tokenize(std::string str) {
     // Remove whitespace
     str.erase(std::remove_if(str.begin(), str.end(), isspace), str.end());
 
-    std::string temp = "";
-    std::vector<std::string> tokens;
-
     // For each character in the string, check if it's a digit or decimal point
     // If so, push it into an accumulator string, thereby concatinating sequential digits
     // Otherwise, push the completed integer if there is one in the string
     // Finally, push the non-numerical character to the token as an operator
+    std::string temp = "";
+    std::vector<std::string> tokens;
     for (auto c : str) {
         if (isdigit(c) || c == '.') {
             temp += c;
@@ -61,8 +61,11 @@ std::vector<std::string> ExpressionParser::parse_string(std::string str) {
             continue;
         }
 
+        // A '-' is a unary operator if it is the first symbol in the input, or if it immediately follows an operator or left parenthesis
         if (token == "-" &&
-            (i == 0 || (ExpressionParser::ops.find(tokens[i-1][0]) != ExpressionParser::ops.end()))) {
+            (i == 0
+             || (tokens[i-1] == "(")
+             || (ExpressionParser::ops.find(tokens[i-1][0]) != ExpressionParser::ops.end()))) {
             token = "~";
         }
 
