@@ -69,13 +69,16 @@ std::vector<std::string> ExpressionParser::parse_string(std::string str) {
             token = "~";
         }
 
+        // Handle operators
         if (ExpressionParser::ops.find(token[0]) != ExpressionParser::ops.end()) {
+            // If the stack is empty or a unary operator is found, just push it and move on
             if (op_stack.size() == 0 || token == "~") {
                 op_stack.push_back(token[0]);
                 continue;
             }
             std::pair<int, bool> op = ExpressionParser::ops.at(token[0]);
             char top = op_stack.back();
+            // Selectively pop from the operator stack based on precedence
             while ((top != '\0') && (top != '(') &&
                    ((ExpressionParser::ops.at(top).first > op.first)
                 || (ExpressionParser::ops.at(top).second && (ExpressionParser::ops.at(top).first == op.first)))) {
